@@ -1,2 +1,1 @@
-release: python create_admin.py
-web: gunicorn MyDjangoProjectServer.wsgi
+web: python create_admin.py && gunicorn MyDjangoProjectServer.wsgi
