@@ -8,8 +8,9 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from rest_framework import status
 from .models import Client
+from django.views.decorators.csrf import csrf_exempt
 
-
+@csrf_exempt
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_by_id(request, id_client):
@@ -34,7 +35,7 @@ def get_user_by_id(request, id_client):
     }
     return Response(client_data, status=status.HTTP_200_OK)
 
-
+@csrf_exempt
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_users(request):
@@ -55,7 +56,7 @@ def get_all_users(request):
     return Response(all_clients_data, status=status.HTTP_200_OK)
 
 
-
+@csrf_exempt
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update(request, id_client):
@@ -110,7 +111,7 @@ def update(request, id_client):
     }
     return Response(client_data, status=status.HTTP_200_OK)
 
-
+@csrf_exempt
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def updateWithImage(request, id_client):
