@@ -10,6 +10,8 @@ from rest_framework import status
 from .models import Client
 from django.views.decorators.csrf import csrf_exempt
 
+
+# 🟩 OBTENER CLIENTE POR ID
 @csrf_exempt
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -17,13 +19,16 @@ def get_user_by_id(request, id_client):
     try:
         client = Client.objects.get(id=id_client)
     except Client.DoesNotExist:
-        return Response(
-            {
-                "message": "El cliente no existe",
-                "statusCode": status.HTTP_404_NOT_FOUND
-            },
-            status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({
+            "message": "El cliente no existe",
+            "statusCode": 404
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    # 🌍 Construcción dinámica del dominio (local o Render)
+    if settings.DEBUG:
+        base_url = f"http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}"
+    else:
+        base_url = "https://app-django-86x6.onrender.com"
 
     client_data = {
         "id": client.id,
@@ -31,17 +36,26 @@ def get_user_by_id(request, id_client):
         "lastname": client.lastname,
         "email": client.email,
         "phone": client.phone,
-        "image": f'http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}{client.image}' if client.image else None,
+        "image": f"{base_url}{client.image}" if client.image else None,
     }
+
     return Response(client_data, status=status.HTTP_200_OK)
 
+
+# 🟦 OBTENER TODOS LOS CLIENTES
 @csrf_exempt
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_users(request):
     clients = Client.objects.all()
-    all_clients_data = []
 
+    # 🌍 Construcción dinámica del dominio
+    if settings.DEBUG:
+        base_url = f"http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}"
+    else:
+        base_url = "https://app-django-86x6.onrender.com"
+
+    all_clients_data = []
     for client in clients:
         client_data = {
             "id": client.id,
@@ -49,7 +63,7 @@ def get_all_users(request):
             "lastname": client.lastname,
             "email": client.email,
             "phone": client.phone,
-            "image": f'http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}{client.image}' if client.image else None,
+            "image": f"{base_url}{client.image}" if client.image else None,
         }
         all_clients_data.append(client_data)
 
