@@ -7,7 +7,7 @@ class Client(models.Model):
     lastname = models.CharField(max_length=45, db_column='apellido')
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=10, db_column='telefono')
-    image = models.CharField(max_length=255, null=True, blank=False, db_column='imagen')
+    image = models.URLField(max_length=255, null=True, blank=False, db_column='imagen')
     password = models.CharField(max_length=60)
     created_at = models.DateTimeField(db_column='fecha_creacion', auto_now_add=True)
     updated_at = models.DateTimeField(db_column='fecha_actualizacion', auto_now=True)

@@ -25,7 +25,14 @@ def register(request):
         access_token = str(refresh_token.access_token)
 
         response_data = {
-            "cliente": serializer.data,
+            "cliente": {
+                "id": client.id,
+                "name": client.name,
+                "lastname": client.lastname,
+                "email": client.email,
+                "phone": client.phone,
+                "image": client.image if client.image else None,
+            },
             "token": "Bearer " + access_token,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
@@ -92,12 +99,8 @@ def login(request):
     refresh_token = getCustomTokenForClient(client)
     access_token = str(refresh_token.access_token)
 
-    # 🌍 URL base dinámica
-    if settings.DEBUG:
-        base_url = f"http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}"
-    else:
-        base_url = "https://app-django-86x6.onrender.com"
-
+    # 🖼️ La imagen ya viene con URL completa de Cloudinary
+    # No necesitamos concatenar base_url
     client_data = {
         "cliente": {
             "id": client.id,
@@ -105,7 +108,7 @@ def login(request):
             "lastname": client.lastname,
             "email": client.email,
             "phone": client.phone,
-            "image": f"{base_url}{client.image}" if client.image else None,
+            "image": client.image if client.image else None,  # ✅ URL completa de Cloudinary
         },
         "token": "Bearer " + access_token,
     }
