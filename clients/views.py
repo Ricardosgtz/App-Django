@@ -55,18 +55,6 @@ def get_all_users(request):
 
     return Response(all_clients_data, status=status.HTTP_200_OK)
 
-
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.conf import settings
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from django.views.decorators.csrf import csrf_exempt
-from clients.models import Client
-
-
 # 🟩 ACTUALIZAR CLIENTE (sin imagen)
 @csrf_exempt
 @api_view(['PUT'])
