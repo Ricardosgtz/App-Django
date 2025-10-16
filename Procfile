@@ -1,1 +1,1 @@
-web: python create_admin.py && gunicorn MyDjangoProjectServer.wsgi
+web: gunicorn MyDjangoProjectServer.wsgi

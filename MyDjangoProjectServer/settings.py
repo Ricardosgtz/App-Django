@@ -6,6 +6,9 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url  # ✅ Importante: instala con pip install dj-database-url
+from dotenv import load_dotenv
+
+load_dotenv()  # ✅ Carga las variables del .env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
