@@ -19,6 +19,9 @@ from django.contrib import admin
 from django.conf.urls.static import static
 from django.urls import path
 from django.urls import include
+from django.conf.urls.static import static
+from django.urls import re_path
+from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,12 +35,10 @@ urlpatterns = [
 
 ]
 
-# -------------------------------
-# 🖼️ SERVIR ARCHIVOS MEDIA Y STATIC
-# -------------------------------
-# Esto permite que Django devuelva archivos como:
-# https://app-django-86x6.onrender.com/media/uploads/clients/5/foto.jpg
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# (opcional pero recomendado también para estáticos si usas DEBUG=True local)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
