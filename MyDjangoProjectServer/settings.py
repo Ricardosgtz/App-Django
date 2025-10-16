@@ -132,6 +132,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# ✅ Render también servirá los archivos media
+if not DEBUG:
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+
 # -------------------------
 # 🔧 Configuración extra
 # -------------------------

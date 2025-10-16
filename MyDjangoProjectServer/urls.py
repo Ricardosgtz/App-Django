@@ -32,4 +32,12 @@ urlpatterns = [
 
 ]
 
+# -------------------------------
+# 🖼️ SERVIR ARCHIVOS MEDIA Y STATIC
+# -------------------------------
+# Esto permite que Django devuelva archivos como:
+# https://app-django-86x6.onrender.com/media/uploads/clients/5/foto.jpg
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# (opcional pero recomendado también para estáticos si usas DEBUG=True local)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
