@@ -19,7 +19,11 @@ SECRET_KEY = os.environ.get(
     'SECRET_KEY', 'django-insecure-(*e=$^3e0=%b7ty_p8qk!13w!$hl^qmvsynmkn+_&lsx*2&0jp'
 )
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
+GLOBAL_IP = '192.168.100.13'
+GLOBAL_HOST = '3000'
+ALLOWED_HOSTS = [GLOBAL_IP]
+
 
 # Render asigna un dominio automáticamente, así que permitimos todos
 ALLOWED_HOSTS = ['*']
