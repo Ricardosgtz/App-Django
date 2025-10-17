@@ -56,34 +56,32 @@ def login(request):
 
     if not email or not password:
         return Response(
-            {
-                "message": "El email y el password son requeridos",
-                "statusCode": status.HTTP_400_BAD_REQUEST
-            },
+            {"message": "El email y el password son requeridos", "statusCode": 400},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     try:
-        # Primero buscamos ignorando mayúsculas/minúsculas
+        # Ignora mayúsculas/minúsculas al buscar
         client = Client.objects.get(email__iexact=email)
 
-        # 🔒 Validamos que el email coincida EXACTAMENTE
+        # Valida coincidencia exacta
         if client.email != email:
             raise Client.DoesNotExist
 
     except Client.DoesNotExist:
         return Response(
-            {
-                "message": "El email o el password no son válidos",
-                "statusCode": status.HTTP_401_UNAUTHORIZED
-            },
+            {"message": "El email o el password no son válidos", "statusCode": 401},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    # Validamos contraseña
+    # 🔐 Validar contraseña
     if bcrypt.checkpw(password.encode("utf-8"), client.password.encode("utf-8")):
         refresh_token = getCustoSTokenForClient(client)
         access_token = str(refresh_token.access_token)
+
+        # ✅ La imagen ya guarda una URL completa (de Supabase)
+        image_url = client.image if client.image else None
+
         client_data = {
             "cliente": {
                 "id": client.id,
@@ -91,16 +89,15 @@ def login(request):
                 "lastname": client.lastname,
                 "email": client.email,
                 "phone": client.phone,
-               "image": client.image if client.image else None,
+                "image": image_url,
             },
-            "token": "Bearer " + access_token,
+            "token": f"Bearer {access_token}",
         }
+
         return Response(client_data, status=status.HTTP_200_OK)
+
     else:
         return Response(
-            {
-                "message": "El email o el password no son válidos",
-                "statusCode": status.HTTP_401_UNAUTHORIZED
-            },
+            {"message": "El email o el password no son válidos", "statusCode": 401},
             status=status.HTTP_401_UNAUTHORIZED
         )
