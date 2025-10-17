@@ -91,7 +91,7 @@ def login(request):
                 "lastname": client.lastname,
                 "email": client.email,
                 "phone": client.phone,
-                "image": f"http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}{client.image}" if client.image else None,
+               "image": client.image if client.image else None,
             },
             "token": "Bearer " + access_token,
         }
