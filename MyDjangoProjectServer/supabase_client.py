@@ -2,7 +2,6 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# Cargar variables del entorno
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -19,12 +18,13 @@ def upload_file_to_supabase(file, client_id):
         file_path = f"clients/{client_id}/{file.name}"
         file_bytes = file.read()
 
-        # Subir archivo
-        res = supabase.storage.from_(SUPABASE_BUCKET).upload(file_path, file_bytes, {"upsert": True})
+        # ✅ corregido: eliminamos el parámetro booleano
+        res = supabase.storage.from_(SUPABASE_BUCKET).upload(file_path, file_bytes)
+
         if res.get("error"):
             raise Exception(res["error"]["message"])
 
-        # Obtener URL pública
+        # ✅ obtener la URL pública
         public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_path)
         return public_url
 
