@@ -1,5 +1,5 @@
 import os
-from supabase import create_client, Client
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,26 +8,32 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "clients")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 def upload_file_to_supabase(file, client_id):
     """
-    Sube un archivo al bucket de Supabase y devuelve su URL pública.
+    Sube una imagen al bucket Supabase usando HTTP directo (modo compatible con Render).
     """
     try:
-        file_path = f"clients/{client_id}/{file.name}"
-        file_bytes = file.read()
+        file_path = f"{client_id}/{file.name}"
 
-        # ✅ corregido: eliminamos el parámetro booleano
-        res = supabase.storage.from_(SUPABASE_BUCKET).upload(file_path, file_bytes)
+        # URL de subida al bucket
+        upload_url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{file_path}"
 
-        if res.get("error"):
-            raise Exception(res["error"]["message"])
+        headers = {
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "apikey": SUPABASE_KEY,
+            "Content-Type": file.content_type or "application/octet-stream",
+        }
 
-        # ✅ obtener la URL pública
-        public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_path)
+        # Usar PUT para evitar conflictos
+        response = requests.put(upload_url, headers=headers, data=file.read())
+
+        if response.status_code not in [200, 201]:
+            raise Exception(f"Error {response.status_code}: {response.text}")
+
+        # URL pública
+        public_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/{file_path}"
         return public_url
 
     except Exception as e:
-        print("❌ Error subiendo archivo a Supabase:", e)
+        print("❌ Error al subir imagen a Supabase:", e)
         raise e
