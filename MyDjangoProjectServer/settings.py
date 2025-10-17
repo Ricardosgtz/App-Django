@@ -21,17 +21,12 @@ SECRET_KEY = os.environ.get(
     'django-insecure-(*e=$^3e0=%b7ty_p8qk!13w!$hl^qmvsynmkn+_&lsx*2&0jp'
 )
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # -------------------------
 # 🌍 Hosts permitidos
 # -------------------------
-if DEBUG:
-    GLOBAL_IP = '192.168.100.13'  # tu IP local
-    GLOBAL_HOST = '3000'
-    ALLOWED_HOSTS = [GLOBAL_IP, 'localhost', '127.0.0.1']
-else:
-    ALLOWED_HOSTS = ['*']  # o tu dominio Render
+ALLOWED_HOSTS = ['*']  # o tu dominio Render
 
 # -------------------------
 # ⚙️ Aplicaciones
