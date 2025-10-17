@@ -67,12 +67,14 @@ class Order(models.Model):
 
 
 class OrderDetail(models.Model):
+
+    id = models.AutoField(primary_key=True)
+
     order = models.ForeignKey(
         'Order',
         on_delete=models.CASCADE,
         db_column='ordenId',
         related_name='orderdetails',
-        primary_key=True
     )
     product = models.ForeignKey(
         'products.Product',
