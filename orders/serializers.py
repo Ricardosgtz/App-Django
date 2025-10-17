@@ -139,7 +139,7 @@ class OrderRetrieveSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    """Serializer para crear una orden"""
+    """Serializer para crear una orden con sus productos"""
     items = serializers.ListField(
         child=serializers.DictField(),
         write_only=True,
@@ -151,69 +151,59 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         fields = ['client', 'restaurant', 'address', 'order_type', 'note', 'items', 'status']
 
     def validate(self, data):
-        """Valida que la dirección sea requerida solo para pedidos a domicilio"""
         order_type = data.get('order_type')
         address = data.get('address')
         client = data.get('client')
-        
-        # Validar que el cliente sea el usuario autenticado
         request = self.context.get('request')
+
+        # 🔒 Validar cliente autenticado
         if request and request.user.is_authenticated:
-            # request.user es un objeto Client, acceder directamente a su id
             if client.id != request.user.id:
-                raise serializers.ValidationError({
-                    'client': 'Solo puedes crear órdenes para ti mismo'
-                })
+                raise serializers.ValidationError({'client': 'Solo puedes crear órdenes para ti mismo'})
 
-        # Si es domicilio, la dirección es obligatoria
+        # 📍 Validar dirección según tipo de pedido
         if order_type == 'domicilio' and not address:
-            raise serializers.ValidationError({
-                'address': 'La dirección es requerida para pedidos a domicilio'
-            })
-
-        # Si es sitio o anticipado, la dirección no se debe enviar (o será None)
+            raise serializers.ValidationError({'address': 'La dirección es requerida para pedidos a domicilio'})
         if order_type in ['sitio', 'anticipado']:
             data['address'] = None
 
         return data
 
     def validate_items(self, value):
-        if not value or len(value) == 0:
+        if not value:
             raise serializers.ValidationError("La orden debe contener al menos un producto")
-        
+
         for item in value:
             if 'product_id' not in item or 'quantity' not in item or 'unit_price' not in item:
-                raise serializers.ValidationError(
-                    "Cada item debe tener: product_id, quantity, unit_price"
-                )
+                raise serializers.ValidationError("Cada producto debe tener product_id, quantity y unit_price")
             if item['quantity'] < 1:
                 raise serializers.ValidationError("La cantidad debe ser mayor a 0")
-            if item['unit_price'] < 0:
+            if float(item['unit_price']) < 0:
                 raise serializers.ValidationError("El precio no puede ser negativo")
-        
         return value
 
+    @transaction.atomic
     def create(self, validated_data):
-        from orderstatus.models import OrderStatus
-        
-        items = validated_data.pop('items')
-        
-        # Si no proporcionan status, asignar "Pendiente" (id=1)
+        """Crea la orden y sus detalles en una transacción"""
+        items = validated_data.pop('items', [])
+
+        # ✅ Asignar estado pendiente si no se envía
         if not validated_data.get('status'):
-            try:
-                pending_status = OrderStatus.objects.get(id=1)
-                validated_data['status'] = pending_status
-            except OrderStatus.DoesNotExist:
-                pass
-        
+            validated_data['status'] = OrderStatus.objects.filter(id=1).first()
+
+        # 🧾 Crear la orden
         order = Order.objects.create(**validated_data)
 
-        for item in items:
-            OrderDetail.objects.create(
+        # 🛒 Crear cada producto de la orden
+        details = [
+            OrderDetail(
                 order=order,
                 product_id=item['product_id'],
                 quantity=item['quantity'],
                 unit_price=item['unit_price']
             )
+            for item in items
+        ]
+        OrderDetail.objects.bulk_create(details)  # ✅ inserta todos de golpe (más rápido y confiable)
 
         return order
