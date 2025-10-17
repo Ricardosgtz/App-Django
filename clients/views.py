@@ -118,50 +118,78 @@ def update(request, id_client):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def updateWithImage(request, id_client):
+    """
+    Actualiza los datos del cliente (nombre, apellido, teléfono e imagen)
+    Funciona tanto en entorno local como en Render.
+    """
+
+    # 🛑 Verificar que el usuario autenticado sea el mismo que se actualiza
     if str(request.user.id) != str(id_client):
         return Response(
-            {"message": "No tienes permiso para actualizar este cliente"},
+            {
+                "message": "No tienes permiso para actualizar este cliente",
+                "statusCode": status.HTTP_403_FORBIDDEN
+            },
             status=status.HTTP_403_FORBIDDEN
         )
 
+    # 🧩 Obtener el cliente
     try:
         client = Client.objects.get(id=id_client)
     except Client.DoesNotExist:
         return Response(
-            {"message": "El cliente no existe"},
+            {
+                "message": "El cliente no existe",
+                "statusCode": status.HTTP_404_NOT_FOUND
+            },
             status=status.HTTP_404_NOT_FOUND
         )
 
+    # 📥 Datos enviados desde la app
     name = request.data.get('name')
     lastname = request.data.get('lastname')
     phone = request.data.get('phone')
-    image = request.FILES.get('file')
+    image = request.FILES.get('file')  # archivo adjunto (imagen)
 
+    # ❌ Validar que haya al menos un dato
     if not any([name, lastname, phone, image]):
         return Response(
-            {"message": "No se enviaron datos para actualizar"},
+            {
+                "message": "No se enviaron datos para actualizar",
+                "statusCode": status.HTTP_400_BAD_REQUEST
+            },
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # 📸 Guardar imagen
+    # 🧾 Actualizar campos de texto
+    if name:
+        client.name = name
+    if lastname:
+        client.lastname = lastname
+    if phone:
+        client.phone = phone
+
+    # 📸 Guardar la imagen (en MEDIA_ROOT)
     if image:
         file_path = f'uploads/clients/{client.id}/{image.name}'
         saved_path = default_storage.save(file_path, ContentFile(image.read()))
-        client.image = default_storage.url(saved_path)
-
-    if name: client.name = name
-    if lastname: client.lastname = lastname
-    if phone: client.phone = phone
+        client.image = default_storage.url(saved_path)  # ruta /media/uploads/...
 
     client.save()
 
-    # 🌐 Construir URL de imagen
-    image_url = (
-        f"https://{settings.RENDER_EXTERNAL_HOSTNAME}{client.image}"
-        if not settings.DEBUG and client.image
-        else f"http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}{client.image}" if client.image else None
-    )
+    # 🌍 Generar URL pública correcta
+    if client.image:
+        if not settings.DEBUG:
+            # ✅ En producción (Render)
+            hostname = getattr(settings, 'RENDER_EXTERNAL_HOSTNAME', 'app-django-86x6.onrender.com')
+            image_url = f"https://{hostname}{client.image}"
+        else:
+            # ✅ En modo local
+            image_url = f"http://{settings.GLOBAL_IP}:{settings.GLOBAL_HOST}{client.image}"
+    else:
+        image_url = None
 
+    # 📤 Respuesta JSON limpia
     client_data = {
         "id": client.id,
         "name": client.name,

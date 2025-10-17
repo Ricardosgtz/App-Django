@@ -7,11 +7,9 @@ from pathlib import Path
 from datetime import timedelta
 import dj_database_url
 from dotenv import load_dotenv
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
-load_dotenv()  # ✅ Carga las variables del .env
+# Cargar variables de entorno
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,20 +17,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 🔐 Seguridad
 # -------------------------
 SECRET_KEY = os.environ.get(
-    'SECRET_KEY', 'django-insecure-(*e=$^3e0=%b7ty_p8qk!13w!$hl^qmvsynmkn+_&lsx*2&0jp'
+    'SECRET_KEY', 
+    'django-insecure-(*e=$^3e0=%b7ty_p8qk!13w!$hl^qmvsynmkn+_&lsx*2&0jp'
 )
 
-# ✅ En producción DEBUG debe ser False
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# ✅ Configuración para desarrollo y producción
+# -------------------------
+# 🌍 Hosts permitidos
+# -------------------------
 if DEBUG:
-    GLOBAL_IP = '192.168.100.13'
+    GLOBAL_IP = '192.168.100.13'  # tu IP local
     GLOBAL_HOST = '3000'
     ALLOWED_HOSTS = [GLOBAL_IP, 'localhost', '127.0.0.1']
 else:
-    # Producción en Render
-    ALLOWED_HOSTS = ['*']  # O especifica tu dominio de Render
+    ALLOWED_HOSTS = ['*']  # o tu dominio Render
 
 # -------------------------
 # ⚙️ Aplicaciones
@@ -44,14 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # ✅ Cloudinary DEBE ir antes de tus apps
-    'cloudinary_storage',
-    'cloudinary',
-    
-    # Tus apps
+
+    # Apps de terceros
     'rest_framework',
     'rest_framework_simplejwt',
+
+    # Tus apps
     'clients',
     'authentication',
     'categories',
@@ -67,7 +64,7 @@ INSTALLED_APPS = [
 # -------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Sirve estáticos en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,27 +104,7 @@ DATABASES = {
 }
 
 # -------------------------
-# ☁️ Cloudinary Configuration
-# -------------------------
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
-}
-
-# ✅ Configurar Cloudinary
-cloudinary.config(
-    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
-    api_key=CLOUDINARY_STORAGE['API_KEY'],
-    api_secret=CLOUDINARY_STORAGE['API_SECRET'],
-    secure=True
-)
-
-# ✅ Usar Cloudinary como almacenamiento por defecto para archivos media
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# -------------------------
-# 🔐 Autenticación y JWT
+# 🔐 JWT Authentication
 # -------------------------
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -157,23 +134,26 @@ USE_I18N = True
 USE_TZ = True
 
 # -------------------------
-# 🖼️ Archivos estáticos
+# 🖼️ Archivos estáticos y media
 # -------------------------
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ✅ Media files (ahora manejados por Cloudinary)
+# 📸 Archivos subidos por los usuarios
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # -------------------------
-# 🔧 Configuración extra
+# 🔧 Auto field
 # -------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ✅ CSRF para Render
+# -------------------------
+# 🌐 Configuración para Render
+# -------------------------
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_EXTERNAL_HOSTNAME}']
 
