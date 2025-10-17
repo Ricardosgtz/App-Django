@@ -115,7 +115,6 @@ def update(request, id_client):
     return Response(client_data, status=status.HTTP_200_OK)
 
 
-# ✅ Actualizar cliente CON imagen
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def updateWithImage(request, id_client):
@@ -128,19 +127,14 @@ def updateWithImage(request, id_client):
     try:
         client = Client.objects.get(id=id_client)
     except Client.DoesNotExist:
-        return Response({"message": "El cliente no existe"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"message": "El cliente no existe"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
-    # 🧩 Si Flutter envía 'user' en JSON, decodificarlo
-    user_data = request.data.get('user')
-    if user_data:
-        try:
-            user_data = json.loads(user_data)
-        except json.JSONDecodeError:
-            user_data = {}
-
-    name = user_data.get('name') if isinstance(user_data, dict) else request.data.get('name')
-    lastname = user_data.get('lastname') if isinstance(user_data, dict) else request.data.get('lastname')
-    phone = user_data.get('phone') if isinstance(user_data, dict) else request.data.get('phone')
+    name = request.data.get('name')
+    lastname = request.data.get('lastname')
+    phone = request.data.get('phone')
     image = request.FILES.get('file')
 
     if not any([name, lastname, phone, image]):
@@ -149,7 +143,7 @@ def updateWithImage(request, id_client):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # 📸 Guardar imagen si se envía
+    # 📸 Guardar imagen
     if image:
         file_path = f'uploads/clients/{client.id}/{image.name}'
         saved_path = default_storage.save(file_path, ContentFile(image.read()))
@@ -161,6 +155,7 @@ def updateWithImage(request, id_client):
 
     client.save()
 
+    # 🌐 Construir URL de imagen
     image_url = (
         f"https://{settings.RENDER_EXTERNAL_HOSTNAME}{client.image}"
         if not settings.DEBUG and client.image
