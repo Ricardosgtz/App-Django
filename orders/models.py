@@ -67,14 +67,13 @@ class Order(models.Model):
 
 
 class OrderDetail(models.Model):
-
     id = models.AutoField(primary_key=True)
 
     order = models.ForeignKey(
         'Order',
         on_delete=models.CASCADE,
         db_column='ordenId',
-        related_name='orderdetails',
+        related_name='orderdetails'
     )
     product = models.ForeignKey(
         'products.Product',
@@ -93,6 +92,9 @@ class OrderDetail(models.Model):
 
     class Meta:
         db_table = 'detalles_ordenes'
+        # 🚨 Importante: evita que Django intente crear índices únicos o claves compuestas
+        managed = True  # Si alguna vez se vuelve False, Django no tocará la tabla
+        ordering = ['id']
 
     def __str__(self):
         return f'Detalle Orden #{self.order.id} - Producto #{self.product.id}'
