@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 from orders.models import Order, OrderDetail
 from orders.serializers import (
@@ -104,3 +106,22 @@ def get_order_detail(request, order_id):
             }, 
             status=status.HTTP_400_BAD_REQUEST
         )
+    
+
+
+# --- PRUEBA WEBSOCKET ---
+
+@api_view(['GET'])
+def test_ws(request):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "orders_group",
+        {
+            "type": "send_new_order",
+            "data": {
+                "message": "🔥 WebSocket funcionando correctamente desde el backend (Render + Railway)!",
+                "status": "success"
+            }
+        }
+    )
+    return Response({"message": "Mensaje enviado al WebSocket"})
