@@ -15,13 +15,12 @@ from orders.serializers import (
 )
 from products.models import Product
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_order(request):
-    """Crea una nueva orden con sus detalles"""
+    """Crea una nueva orden con sus detalles y la envía por WebSocket."""
     serializer = OrderCreateSerializer(data=request.data, context={'request': request})
-    
+
     if not serializer.is_valid():
         error_messages = []
         for field, errors in serializer.errors.items():
@@ -33,20 +32,37 @@ def create_order(request):
             "statusCode": status.HTTP_400_BAD_REQUEST
         }
         return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
-    
+
     try:
+        # ✅ Guardar la orden
         order = serializer.save()
+
+        # ✅ Serializar para respuesta HTTP y para WebSocket
         response_serializer = OrderRetrieveSerializer(order)
-        return Response(
-            response_serializer.data, 
-            status=status.HTTP_201_CREATED
+        order_data = response_serializer.data  # datos limpios listos para enviar
+
+        # ✅ Enviar mensaje por WebSocket
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "orders_group",  # nombre del grupo en el consumer
+            {
+                "type": "send_new_order",
+                "data": {
+                    "message": "🆕 Nueva orden creada",
+                    "order": order_data
+                }
+            }
         )
+
+        # ✅ Responder al cliente (Flutter)
+        return Response(order_data, status=status.HTTP_201_CREATED)
+
     except Exception as e:
         return Response(
             {
                 "message": f'Error al crear la orden: {str(e)}',
                 "statusCode": status.HTTP_400_BAD_REQUEST
-            }, 
+            },
             status=status.HTTP_400_BAD_REQUEST
         )
 

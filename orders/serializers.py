@@ -85,15 +85,22 @@ class OrderRetrieveSerializer(serializers.ModelSerializer):
     restaurant = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
-    order = serializers.SerializerMethodField()
-    orderdetails = OrderDetailSerializer(many=True, read_only=True)
+    details = OrderDetailSerializer(source='orderdetails', many=True, read_only=True)
     total = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = [
-            'id', 'client', 'restaurant', 'address',
-            'order', 'status', 'orderdetails', 'total', 'created_at'
+            'id',
+            'client',
+            'restaurant',
+            'address',
+            'status',
+            'order_type',
+            'note',
+            'details',
+            'total',
+            'created_at'
         ]
 
     def get_client(self, obj):
@@ -130,14 +137,9 @@ class OrderRetrieveSerializer(serializers.ModelSerializer):
             }
         return None
 
-    def get_order(self, obj):
-        return {
-            'type': obj.order_type,
-            'note': obj.note
-        }
-
     def get_total(self, obj):
         return obj.get_total()
+
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
