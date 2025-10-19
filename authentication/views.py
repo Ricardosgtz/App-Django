@@ -59,7 +59,6 @@ def login(request):
             {"message": "El email y el password son requeridos", "statusCode": 400},
             status=status.HTTP_400_BAD_REQUEST
         )
-
     try:
         # Ignora mayúsculas/minúsculas al buscar
         client = Client.objects.get(email__iexact=email)

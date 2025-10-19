@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     # Tus apps
+    'channels',
     'clients',
     'authentication',
     'categories',
@@ -53,6 +54,19 @@ INSTALLED_APPS = [
     'orders',
     'orderstatus',
 ]
+
+ASGI_APPLICATION = 'MyDjangoProjectServer.asgi.application'
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://default:zdJltpEuUAxKFtNroKnwzYWKkHRGgbMW@caboose.proxy.rlwy.net:29989")
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],
+        },
+    },
+}
 
 # -------------------------
 # 🔄 Middleware
