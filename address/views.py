@@ -32,7 +32,7 @@ def create(request):
 def get_address_by_user(request, id_client):
     try:
         # ✅ Buscar correctamente por el cliente (ForeignKey)
-        addresses = Address.objects.filter(client_id=id_client)
+        addresses = Address.objects.filter(id_client=id_client)
         serializer = AddressSerializer(addresses, many=True)
         
         # ✅ Devuelve lista vacía [] si no hay direcciones
