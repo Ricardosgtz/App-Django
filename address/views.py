@@ -31,17 +31,22 @@ def create(request):
 @permission_classes([IsAuthenticated])
 def get_address_by_user(request, id_client):
     try:
-        # ✅ Buscar correctamente por el cliente (ForeignKey)
-        addresses = Address.objects.filter(id_client=id_client)
+        # ✅ Filtra correctamente según tu modelo
+        addresses = Address.objects.filter(id_client_id=id_client)
         serializer = AddressSerializer(addresses, many=True)
-        
-        # ✅ Devuelve lista vacía [] si no hay direcciones
+
+        if not addresses.exists():
+            return Response({
+                "message": "El cliente no tiene direcciones registradas",
+                "data": []
+            }, status=status.HTTP_200_OK)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Exception as e:
         return Response({
-            'message': f'Error al obtener las direcciones: {str(e)}',
-            'statusCode': status.HTTP_500_INTERNAL_SERVER_ERROR
+            "message": f"Error al obtener las direcciones: {str(e)}",
+            "statusCode": status.HTTP_500_INTERNAL_SERVER_ERROR
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['DELETE'])
