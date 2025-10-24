@@ -31,14 +31,11 @@ def create(request):
 @permission_classes([IsAuthenticated])
 def get_address_by_user(request, id_client):
     try:
-        addresses = Address.objects.filter(id_client = id_client)
-        if not addresses.exists():
-            return Response({
-                'message': 'No hay direcciones registradas para este usuario',
-                'statusCode': status.HTTP_404_NOT_FOUND
-            }, status=status.HTTP_404_NOT_FOUND)
-
+        # ✅ Buscar correctamente por el cliente (ForeignKey)
+        addresses = Address.objects.filter(client_id=id_client)
         serializer = AddressSerializer(addresses, many=True)
+        
+        # ✅ Devuelve lista vacía [] si no hay direcciones
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Exception as e:
