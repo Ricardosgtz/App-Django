@@ -174,7 +174,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 # 🔒 Seguridad en producción
 # -------------------------
 if not DEBUG:
-    SECURE_SSL_REDIRECT = False
+    SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
