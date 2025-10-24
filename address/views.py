@@ -31,19 +31,19 @@ def create(request):
 @permission_classes([IsAuthenticated])
 def get_address_by_user(request, id_client):
     try:
-        # ✅ Buscar correctamente por el cliente (ForeignKey)
+        # 🔥 CAMBIO: Siempre devolver Success, incluso con lista vacía
         addresses = Address.objects.filter(client_id=id_client)
         serializer = AddressSerializer(addresses, many=True)
         
-        # ✅ Devuelve lista vacía [] si no hay direcciones
+        # ✅ Devuelve lista vacía [] si no hay direcciones, no un error
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Exception as e:
+        # ❌ Solo devuelve error para problemas reales (BD, conexión, etc.)
         return Response({
             'message': f'Error al obtener las direcciones: {str(e)}',
             'statusCode': status.HTTP_500_INTERNAL_SERVER_ERROR
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
