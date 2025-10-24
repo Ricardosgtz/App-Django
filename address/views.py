@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -31,17 +31,17 @@ def create(request):
 @permission_classes([IsAuthenticated])
 def get_address_by_user(request, id_client):
     try:
-        # 🔥 Devolver Success siempre, incluso con lista vacía
-        addresses = Address.objects.filter(id_client=id_client)
+        addresses = Address.objects.filter(id_client = id_client)
+        if not addresses.exists():
+            return Response({
+                'message': 'No hay direcciones registradas para este usuario',
+                'statusCode': status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+
         serializer = AddressSerializer(addresses, many=True)
-        
-        # Log para debugging
-        print(f"📍 Direcciones encontradas para cliente {id_client}: {len(addresses)}")
-        
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Exception as e:
-        print(f"❌ Error en get_address_by_user: {str(e)}")
         return Response({
             'message': f'Error al obtener las direcciones: {str(e)}',
             'statusCode': status.HTTP_500_INTERNAL_SERVER_ERROR
