@@ -31,15 +31,17 @@ def create(request):
 @permission_classes([IsAuthenticated])
 def get_address_by_user(request, id_client):
     try:
-        # 🔥 CAMBIO: Siempre devolver Success, incluso con lista vacía
-        addresses = Address.objects.filter(id_client=id_client)
+        addresses = Address.objects.filter(id_client = id_client)
+        if not addresses.exists():
+            return Response({
+                'message': 'No hay direcciones registradas para este usuario',
+                'statusCode': status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+
         serializer = AddressSerializer(addresses, many=True)
-        
-        # ✅ Devuelve lista vacía [] si no hay direcciones, no un error
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Exception as e:
-        # ❌ Solo devuelve error para problemas reales (BD, conexión, etc.)
         return Response({
             'message': f'Error al obtener las direcciones: {str(e)}',
             'statusCode': status.HTTP_500_INTERNAL_SERVER_ERROR
