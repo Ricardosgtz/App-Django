@@ -31,16 +31,10 @@ def create(request):
 @permission_classes([IsAuthenticated])
 def get_address_by_user(request, id_client):
     try:
-        # ✅ Filtra correctamente según tu modelo
         addresses = Address.objects.filter(id_client_id=id_client)
         serializer = AddressSerializer(addresses, many=True)
 
-        if not addresses.exists():
-            return Response({
-                "message": "El cliente no tiene direcciones registradas",
-                "data": []
-            }, status=status.HTTP_200_OK)
-
+        # ✅ Siempre devuelve una lista JSON
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Exception as e:
@@ -48,6 +42,7 @@ def get_address_by_user(request, id_client):
             "message": f"Error al obtener las direcciones: {str(e)}",
             "statusCode": status.HTTP_500_INTERNAL_SERVER_ERROR
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
