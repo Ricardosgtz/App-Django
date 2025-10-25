@@ -25,7 +25,7 @@ def register(request):
             "token": "Bearer " + acceso_token,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
     error_messages = []
     for field, errors in serializer.errors.items():
