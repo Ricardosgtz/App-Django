@@ -19,10 +19,7 @@ class AddressSerializer(serializers.ModelSerializer):
         allow_blank=False,
         error_messages={'blank': 'La refencia no puede estar vacia'}
     )
-    id_client = serializers.PrimaryKeyRelatedField(
-        queryset = Client.objects.all(),
-        error_messages = {'does_not_exist': 'El Cliente no existe'}
-    )
     class Meta:
         model = Address
         fields = ['id', 'id_client', 'alias', 'address', 'reference', 'created_at', 'updated_at']
+        read_only_fields = ['id_client']

@@ -157,7 +157,7 @@ def updateWithImage(request, id_client):
         "lastname": client.lastname,
         "email": client.email,
         "phone": client.phone,
-        "image": client.image,
+        "image": client.image, #aqui nada mas mando a llamar a la url de la imagen que se guardo en supabase
     }
 
     return Response(client_data, status=status.HTTP_200_OK)

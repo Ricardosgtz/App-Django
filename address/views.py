@@ -17,6 +17,15 @@ def format_serializer_errors(errors):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create(request):
+    user = request.user
+    cliente = getattr(user, 'cliente', None)
+
+    if not cliente:
+        return Response({
+            "message": ["El usuario autenticado no tiene cliente asociado."],
+            "statusCode": status.HTTP_400_BAD_REQUEST
+        }, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = AddressSerializer(data=request.data)
     if not serializer.is_valid():
         return Response({
@@ -24,8 +33,11 @@ def create(request):
             "statusCode": status.HTTP_400_BAD_REQUEST
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    serializer.save()
+    # ✅ ESTA LÍNEA ES LA CLAVE
+    serializer.save(id_client=cliente)
+
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
