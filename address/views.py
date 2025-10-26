@@ -17,15 +17,6 @@ def format_serializer_errors(errors):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create(request):
-    user = request.user
-    cliente = getattr(user, 'cliente', None)
-
-    if not cliente:
-        return Response({
-            "message": ["El usuario autenticado no tiene cliente asociado."],
-            "statusCode": status.HTTP_400_BAD_REQUEST
-        }, status=status.HTTP_400_BAD_REQUEST)
-
     serializer = AddressSerializer(data=request.data)
     if not serializer.is_valid():
         return Response({
@@ -33,11 +24,8 @@ def create(request):
             "statusCode": status.HTTP_400_BAD_REQUEST
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    # ✅ ESTA LÍNEA ES LA CLAVE
-    serializer.save(id_client=cliente)
-
+    serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -54,7 +42,6 @@ def get_address_by_user(request, id_client):
             "message": f"Error al obtener las direcciones: {str(e)}",
             "statusCode": status.HTTP_500_INTERNAL_SERVER_ERROR
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
