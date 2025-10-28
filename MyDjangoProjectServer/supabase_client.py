@@ -13,7 +13,8 @@ def upload_file_to_supabase(file, client_id):
     Sube una imagen al bucket Supabase usando HTTP directo (modo compatible con Render).
     """
     try:
-        file_path = f"{client_id}/{file.name}"
+        # 🔥 CAMBIO: Agregar "clientes/" antes del client_id
+        file_path = f"clientes/{client_id}/{file.name}"
 
         # URL de subida al bucket
         upload_url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{file_path}"
