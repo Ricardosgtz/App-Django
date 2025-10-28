@@ -1,5 +1,7 @@
 import os
 import requests
+import time
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,8 +15,21 @@ def upload_file_to_supabase(file, client_id):
     Sube una imagen al bucket Supabase usando HTTP directo (modo compatible con Render).
     """
     try:
-        # 🔥 CAMBIO: Agregar "clientes/" antes del client_id
-        file_path = f"clientes/{client_id}/{file.name}"
+        # 🔥 Generar nombre único similar a uniqid() de PHP
+        nombre_original = file.name
+        extension = Path(nombre_original).suffix  # Obtiene ".jpg", ".png", etc
+        
+        # Asegura extensión en minúsculas y evita nombres vacíos
+        extension = extension.lower() if extension else '.jpg'
+        
+        # Genera nombre único estilo PHP uniqid(): "68ff05573d08e"
+        nombre_unico = format(int(time.time() * 1000000) & 0xFFFFFFFFFFFF, 'x')
+        
+        # Nombre final: 68ff05573d08e.jpg
+        nombre_archivo = f"{nombre_unico}{extension}"
+        
+        # Ruta completa: clientes/4/68ff05573d08e.jpg
+        file_path = f"clientes/{client_id}/{nombre_archivo}"
 
         # URL de subida al bucket
         upload_url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{file_path}"
