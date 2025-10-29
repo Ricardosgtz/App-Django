@@ -104,7 +104,8 @@ def create_order(request):
 def get_orders_by_client(request, client_id):
     """Obtiene todas las órdenes de un cliente específico"""
     try:
-        orders = Order.objects.filter(client_id=client_id)
+        # ✅ SOLUCIÓN: Ordenar por ID descendente (más reciente primero)
+        orders = Order.objects.filter(client_id=client_id).order_by('-id')
         
         if not orders.exists():
             return Response(
