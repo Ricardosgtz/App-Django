@@ -89,12 +89,14 @@ class OrderRetrieveSerializer(serializers.ModelSerializer):
     order = serializers.SerializerMethodField()
     orderdetails = OrderDetailSerializer(many=True, read_only=True)
     total = serializers.SerializerMethodField()
+    arrival_time = serializers.TimeField(read_only=True) 
+
 
     class Meta:
         model = Order
         fields = [
             'id', 'client', 'restaurant', 'address',
-            'order', 'status', 'orderdetails', 'total', 'created_at'
+            'order', 'status', 'orderdetails', 'total', 'arrival_time', 'created_at'
         ]
 
     def get_client(self, obj):
