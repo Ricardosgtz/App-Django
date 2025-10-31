@@ -1,4 +1,5 @@
 # orders/serializers.py
+from datetime import time
 from rest_framework import serializers
 from orders.models import Order, OrderDetail
 from products.serializers import ProductSerializer
@@ -147,15 +148,20 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True
     )
+    arrival_time = serializers.TimeField(required=False, allow_null=True)
 
     class Meta:
         model = Order
-        fields = ['client', 'restaurant', 'address', 'order_type', 'note', 'items', 'status']
+        fields = [
+            'client', 'restaurant', 'address',
+            'order_type', 'note', 'items', 'status', 'arrival_time'
+        ]
 
     def validate(self, data):
         order_type = data.get('order_type')
         address = data.get('address')
         client = data.get('client')
+        arrival_time = data.get('arrival_time')
         request = self.context.get('request')
 
         # 🔒 Validar cliente autenticado
@@ -168,6 +174,25 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'address': 'La dirección es requerida para pedidos a domicilio'})
         if order_type in ['sitio', 'anticipado']:
             data['address'] = None
+
+        # 🕒 Validar horario de llegada para órdenes anticipadas
+        if order_type == 'anticipado':
+            if not arrival_time:
+                raise serializers.ValidationError({
+                    'arrival_time': 'Debes seleccionar una hora de llegada para órdenes anticipadas.'
+                })
+
+            start_time = time(15, 0)
+            end_time = time(23, 0)
+
+            if not (start_time <= arrival_time <= end_time):
+                raise serializers.ValidationError({
+                    'arrival_time': 'La hora de llegada debe estar entre las 15:00 y las 23:00.'
+                })
+
+        # 🚫 Si el pedido NO es anticipado, limpiar arrival_time
+        if order_type != 'anticipado':
+            data['arrival_time'] = None
 
         return data
 

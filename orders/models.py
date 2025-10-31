@@ -18,6 +18,13 @@ class Order(models.Model):
     )
     note = models.TextField(db_column='nota', null=True, blank=True)
 
+    arrival_time = models.TimeField(
+        db_column='hora_llegada',
+        null=True,
+        blank=True,
+        help_text="Hora de llegada para órdenes anticipadas (15:00–23:00)"
+    )
+
     client = models.ForeignKey(
         'clients.Client',
         on_delete=models.SET_NULL,
