@@ -53,10 +53,10 @@ class Payment(models.Model):
     )
 
     payment_date = models.DateTimeField(
-        auto_now_add=True,
+        null=True,
+        blank=True,
         db_column='fecha_pago',
         help_text='Fecha y hora del pago',
-        verbose_name='Fecha del pago',
     )
 
     order = models.ForeignKey(

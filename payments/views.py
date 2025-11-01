@@ -7,6 +7,7 @@ from django.conf import settings
 from payments.models import Payment
 from payments.serializers import PaymentSerializer
 from orders.models import Order
+from django.utils import timezone
 from MyDjangoProjectServer.supabase_client import upload_comprobante_to_supabase  # ✅ Import directo
 
 
@@ -63,7 +64,8 @@ def create_payment(request):
             payment_method=payment_method,
             status='pendiente',
             amount=order.get_total(),
-            receipt=public_url
+            receipt=public_url,
+            payment_date=timezone.now(),
         )
 
         serializer = PaymentSerializer(payment)
