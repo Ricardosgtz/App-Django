@@ -53,3 +53,40 @@ def upload_file_to_supabase(file, client_id):
     except Exception as e:
         print("❌ Error al subir imagen a Supabase:", e)
         raise e
+        
+
+def upload_comprobante_to_supabase(file):
+    """
+    📤 Sube un comprobante al bucket Supabase dentro de la carpeta 'Comprobantes/'.
+    """
+    try:
+        nombre_original = file.name
+        extension = Path(nombre_original).suffix.lower() if Path(nombre_original).suffix else ".jpg"
+
+        # 🔑 Genera nombre único
+        nombre_unico = format(int(time.time() * 1000000) & 0xFFFFFFFFFFFF, 'x')
+        nombre_archivo = f"{nombre_unico}{extension}"
+
+        # 📂 Carpeta destino dentro del bucket clients
+        file_path = f"Comprobantes/{nombre_archivo}"
+
+        upload_url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{file_path}"
+
+        headers = {
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "apikey": SUPABASE_KEY,
+            "Content-Type": file.content_type or "application/octet-stream",
+        }
+
+        response = requests.put(upload_url, headers=headers, data=file.read())
+
+        if response.status_code not in [200, 201]:
+            raise Exception(f"Error {response.status_code}: {response.text}")
+
+        # ✅ Retorna la URL pública
+        public_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/{file_path}"
+        return public_url
+
+    except Exception as e:
+        print("❌ Error al subir comprobante:", e)
+        raise e

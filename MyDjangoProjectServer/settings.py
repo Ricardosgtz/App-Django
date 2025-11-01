@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'address',
     'orders',
     'orderstatus',
+    'payments'
 ]
 
 ASGI_APPLICATION = 'MyDjangoProjectServer.asgi.application'
