@@ -55,9 +55,9 @@ def upload_file_to_supabase(file, client_id):
         raise e
         
 
-def upload_comprobante_to_supabase(file):
+def upload_comprobante_to_supabase(file, client_id):
     """
-    📤 Sube un comprobante al bucket Supabase dentro de la carpeta 'Comprobantes/'.
+    📤 Sube un comprobante al bucket Supabase dentro de 'Comprobantes/<client_id>/'.
     """
     try:
         nombre_original = file.name
@@ -68,7 +68,7 @@ def upload_comprobante_to_supabase(file):
         nombre_archivo = f"{nombre_unico}{extension}"
 
         # 📂 Carpeta destino dentro del bucket clients
-        file_path = f"Comprobantes/{nombre_archivo}"
+        file_path = f"Comprobantes/{client_id}/{nombre_archivo}"
 
         upload_url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{file_path}"
 
@@ -78,6 +78,7 @@ def upload_comprobante_to_supabase(file):
             "Content-Type": file.content_type or "application/octet-stream",
         }
 
+        # PUT para subir el archivo
         response = requests.put(upload_url, headers=headers, data=file.read())
 
         if response.status_code not in [200, 201]:
@@ -90,3 +91,4 @@ def upload_comprobante_to_supabase(file):
     except Exception as e:
         print("❌ Error al subir comprobante:", e)
         raise e
+
