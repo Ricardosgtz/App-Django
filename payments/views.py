@@ -9,11 +9,12 @@ from payments.serializers import PaymentSerializer
 from orders.models import Order
 from MyDjangoProjectServer.supabase_client import upload_comprobante_to_supabase  # ✅ Import directo
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_payment(request):
     """
-    📥 Crea un pago. Si es por transferencia, sube el comprobante a Supabase.
+    📥 Crea un pago. Si es por transferencia, sube el comprobante a Supabase dentro de /Comprobantes/<client_id>/.
     """
     try:
         order_id = request.data.get('order_id')
@@ -22,28 +23,29 @@ def create_payment(request):
 
         if not order_id:
             return Response(
-                {"message": "La orden es obligatoria."},
+                {"message": "El campo 'order_id' es obligatorio."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # 🔎 Buscar la orden
         try:
             order = Order.objects.get(id=order_id)
         except Order.DoesNotExist:
             return Response(
-                {"message": "La orden no existe."},
+                {"message": "La orden especificada no existe."},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        client_id = order.client.id  # ✅ Usamos el id del cliente de la orden
+        client_id = order.client.id  # ✅ cliente dueño de la orden
 
-        # 🔸 Validar método
+        # 🔸 Validar método de pago
         if payment_method not in ['efectivo', 'transferencia']:
             return Response(
-                {"message": "Método de pago inválido."},
+                {"message": "Método de pago inválido. Usa 'efectivo' o 'transferencia'."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 🔸 Validar comprobante si es transferencia
+        # 🔸 Si es transferencia, validar comprobante
         public_url = None
         if payment_method == 'transferencia':
             if not comprobante:
@@ -52,15 +54,15 @@ def create_payment(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # ✅ Subir a Supabase
+            # ✅ Subir a Supabase usando tu archivo `supabase_clients.py`
             public_url = upload_comprobante_to_supabase(comprobante, client_id)
 
-        # ✅ Crear pago
+        # 🧾 Crear el pago
         payment = Payment.objects.create(
             order=order,
             payment_method=payment_method,
             status='pendiente',
-            amount=order.get_total(),  # Monto igual al total de la orden
+            amount=order.get_total(),
             receipt=public_url
         )
 
@@ -72,6 +74,7 @@ def create_payment(request):
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
+        print("❌ Error en create_payment:", e)
         return Response(
             {"message": f"Error al subir comprobante: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
