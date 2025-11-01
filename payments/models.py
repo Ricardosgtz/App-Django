@@ -56,6 +56,7 @@ class Payment(models.Model):
         auto_now_add=True,
         db_column='fecha_pago',
         help_text='Fecha y hora del pago',
+        verbose_name='Fecha del pago',
     )
 
     order = models.ForeignKey(
