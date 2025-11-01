@@ -53,8 +53,7 @@ class Payment(models.Model):
     )
 
     payment_date = models.DateTimeField(
-        null=True,
-        blank=True,
+        auto_now_add=True,
         db_column='fecha_pago',
         help_text='Fecha y hora del pago',
     )
