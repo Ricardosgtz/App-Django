@@ -3,5 +3,5 @@ from .views import create_payment
 
 urlpatterns = [
     # 📤 Crear un nuevo pago (efectivo o transferencia)
-    path('create/', create_payment ),
+    path('', create_payment ),
 ]
