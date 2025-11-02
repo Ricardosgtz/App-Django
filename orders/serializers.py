@@ -47,7 +47,9 @@ class OrderListSerializer(serializers.ModelSerializer):
     def get_restaurant(self, obj):
         return {
             'id': obj.restaurant.id,
-            'name': obj.restaurant.name
+            'name': obj.restaurant.name,
+            'account_number': obj.restaurant.account_number,
+            'clabe': obj.restaurant.clable,
         }
 
     def get_order(self, obj):
@@ -111,7 +113,9 @@ class OrderRetrieveSerializer(serializers.ModelSerializer):
     def get_restaurant(self, obj):
         return {
             'id': obj.restaurant.id,
-            'name': obj.restaurant.name
+            'name': obj.restaurant.name,
+            'account_number': obj.restaurant.account_number,
+            'clabe': obj.restaurant.clable,
         }
 
     def get_address(self, obj):

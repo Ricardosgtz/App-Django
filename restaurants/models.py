@@ -10,6 +10,20 @@ class Restaurant(models.Model):
     closing_time = models.TimeField(db_column='horario_cierre', null=True, blank=True)
     logo = models.CharField(max_length=255, db_column='logo', null=True, blank=True)
     status = models.BooleanField(db_column='estatus', null=True, blank=True)
+    account_number = models.CharField(
+        max_length=20,
+        db_column='numero_cuenta',
+        null=True,
+        blank=True,
+        help_text="Número de cuenta bancaria"
+    )
+    clabe = models.CharField(
+        max_length=20,
+        db_column='clabe',
+        null=True,
+        blank=True,
+        help_text="CLABE interbancaria"
+    )
 
     class Meta:
         db_table = 'restaurantes'
