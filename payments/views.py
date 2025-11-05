@@ -81,3 +81,49 @@ def create_payment(request):
             {"message": f"Error al subir comprobante: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_payment_by_order(request, order_id):
+    """
+    📋 Obtiene el pago asociado a una orden específica.
+    """
+    try:
+        # 🔎 Buscar la orden
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response(
+                {"message": "La orden especificada no existe."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # 🔍 Verificar que el usuario autenticado sea el dueño de la orden
+        if order.client.id != request.user.id:
+            return Response(
+                {"message": "No tienes permiso para ver el pago de esta orden."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 🔎 Buscar el pago asociado a la orden
+        try:
+            payment = Payment.objects.get(order=order)
+            serializer = PaymentSerializer(payment)
+            return Response({
+                "message": "Pago obtenido correctamente",
+                "statusCode": 200,
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except Payment.DoesNotExist:
+            return Response(
+                {"message": "No se encontró un pago para esta orden."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    except Exception as e:
+        print("❌ Error en get_payment_by_order:", e)
+        return Response(
+            {"message": f"Error al obtener el pago: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
