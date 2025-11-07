@@ -7,5 +7,5 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'id_category', 'name', 'description', 'price',
-            'image1', 'image2', 'created_at', 'updated_at', 'available'  # <-- agregado
+            'image1', 'image2', 'created_at', 'updated_at', 'available', 'deleted'  # <-- agregado deleted
         ]

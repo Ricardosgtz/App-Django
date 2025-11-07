@@ -9,10 +9,11 @@ from .serializers import ProductSerializer
 @permission_classes([IsAuthenticated])
 def get_products_by_category(request, id_category):
     """
-    Obtiene todos los productos de una categoría específica
+    Obtiene todos los productos activos (no eliminados) de una categoría específica
     y devuelve un campo 'is_available' consistente para la app.
     """
-    products = Product.objects.filter(id_category=id_category)
+    # Filtrar solo productos NO eliminados
+    products = Product.objects.filter(id_category=id_category, deleted=False)
     
     if not products.exists():
         return Response({
