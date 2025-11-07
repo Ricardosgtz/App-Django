@@ -10,6 +10,7 @@ class Product(models.Model):
     available = models.BooleanField(db_column='disponible', null=True, blank=True)
     created_at = models.DateTimeField(db_column='fecha_creacion', null=True, blank=True)
     updated_at = models.DateTimeField(db_column='fecha_actualizacion', null=True, blank=True)
+    deleted = models.BooleanField(db_column='eliminado', default=False)  # Nuevo campo
 
     id_category = models.ForeignKey(
         'categories.Category',
@@ -22,4 +23,3 @@ class Product(models.Model):
 
     class Meta:
         db_table = 'productos'
-
