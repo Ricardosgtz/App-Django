@@ -71,7 +71,6 @@ class Payment(models.Model):
 
     class Meta:
         db_table = 'pagos'
-        managed = False  # 👈 No se recreará ni modificará en migraciones
         verbose_name = 'Payment'
         verbose_name_plural = 'Payments'
         ordering = ['-payment_date']
