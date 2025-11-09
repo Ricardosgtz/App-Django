@@ -71,6 +71,7 @@ class Payment(models.Model):
 
     class Meta:
         db_table = 'pagos'
+        managed = True
         verbose_name = 'Payment'
         verbose_name_plural = 'Payments'
         ordering = ['-payment_date']
