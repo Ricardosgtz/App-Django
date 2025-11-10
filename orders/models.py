@@ -99,7 +99,6 @@ class OrderDetail(models.Model):
 
     class Meta:
         db_table = 'detalles_ordenes'
-        # 🚨 Importante: evita que Django intente crear índices únicos o claves compuestas
         managed = True  # Si alguna vez se vuelve False, Django no tocará la tabla
         ordering = ['id']
 
