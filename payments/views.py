@@ -58,12 +58,17 @@ def create_payment(request):
             # ✅ Subir a Supabase usando tu archivo `supabase_clients.py`
             public_url = upload_comprobante_to_supabase(comprobante, client_id)
 
+         # ✅ CALCULAR MONTO TOTAL CON CARGO DE ENVÍO
+        subtotal = order.get_total()  # Total de los productos
+        delivery_fee = 15.0 if order.order_type == 'domicilio' else 0.0
+        total_amount = subtotal + delivery_fee
+
         # 🧾 Crear el pago
         payment = Payment.objects.create(
             order=order,
             payment_method=payment_method,
             status='pendiente',
-            amount=order.get_total(),
+            amount=total_amount,
             receipt=public_url,
             payment_date=timezone.now(),
         )
