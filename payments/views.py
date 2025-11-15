@@ -15,7 +15,7 @@ from MyDjangoProjectServer.supabase_client import upload_comprobante_to_supabase
 @permission_classes([IsAuthenticated])
 def create_payment(request):
     """
-    📥 Crea un pago. Si es por transferencia, sube el comprobante a Supabase dentro de /Comprobantes/<client_id>/.
+    📥 Crea un pago. Calcula automáticamente el total incluyendo cargo de envío.
     """
     try:
         order_id = request.data.get('order_id')
@@ -37,12 +37,12 @@ def create_payment(request):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        client_id = order.client.id  # ✅ cliente dueño de la orden
+        client_id = order.client.id
 
         # 🔸 Validar método de pago
         if payment_method not in ['efectivo', 'transferencia']:
             return Response(
-                {"message": "Método de pago inválido. Usa 'efectivo' o 'transferencia'."},
+                {"message": "Método de pago inválido."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -51,17 +51,30 @@ def create_payment(request):
         if payment_method == 'transferencia':
             if not comprobante:
                 return Response(
-                    {"message": "Debes subir el comprobante para pagos por transferencia."},
+                    {"message": "Debes subir el comprobante."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # ✅ Subir a Supabase usando tu archivo `supabase_clients.py`
             public_url = upload_comprobante_to_supabase(comprobante, client_id)
 
-         # ✅ CALCULAR MONTO TOTAL CON CARGO DE ENVÍO
-        subtotal = order.get_total()  # Total de los productos
-        delivery_fee = 15.0 if order.order_type == 'domicilio' else 0.0
-        total_amount = subtotal + delivery_fee
+        # ✅ CALCULAR MONTO - Con manejo de errores
+        try:
+            # Calcular subtotal de los productos
+            subtotal = float(order.get_total() or 0)
+            
+            # Agregar cargo de envío solo si es domicilio
+            delivery_fee = 15.0 if order.order_type == 'domicilio' else 0.0
+            
+            # Total final
+            total_amount = subtotal + delivery_fee
+            
+            print(f"💵 Subtotal: {subtotal}, Envío: {delivery_fee}, Total: {total_amount}")
+            
+        except Exception as calc_error:
+            print(f"❌ Error en cálculo: {calc_error}")
+            return Response(
+                {"message": f"Error al calcular el total: {str(calc_error)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         # 🧾 Crear el pago
         payment = Payment.objects.create(
@@ -81,12 +94,14 @@ def create_payment(request):
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        print("❌ Error en create_payment:", e)
+        import traceback
+        print("❌ Error completo en create_payment:")
+        print(traceback.format_exc())
+        
         return Response(
-            {"message": f"Error al subir comprobante: {str(e)}"},
+            {"message": f"Error al crear el pago: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
