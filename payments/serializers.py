@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from payments.models import Payment
 from orders.models import Order
-from django.utils import timezone  # 👈 importante
 
 class PaymentSerializer(serializers.ModelSerializer):
     order_id = serializers.PrimaryKeyRelatedField(
@@ -10,7 +9,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         write_only=True
     )
     order = serializers.SerializerMethodField()
-    payment_date = serializers.SerializerMethodField()  # 👈 usamos método personalizado
+    payment_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Payment
@@ -27,10 +26,9 @@ class PaymentSerializer(serializers.ModelSerializer):
         read_only_fields = ['status', 'amount', 'payment_date']
 
     def get_payment_date(self, obj):
-        """Convierte la hora UTC a la hora local configurada (México)."""
+        """Retorna la fecha de pago en hora local de México."""
         if obj.payment_date:
-            local_time = timezone.localtime(obj.payment_date)
-            return local_time.strftime("%Y-%m-%d %H:%M:%S")  # 👈 hora local visible
+            return obj.payment_date.strftime("%Y-%m-%d %H:%M:%S")
         return None
 
     def get_order(self, obj):
