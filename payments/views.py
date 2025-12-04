@@ -8,14 +8,14 @@ from payments.models import Payment
 from payments.serializers import PaymentSerializer
 from orders.models import Order
 from django.utils import timezone
-from MyDjangoProjectServer.supabase_client import upload_comprobante_to_supabase  # ✅ Import directo
+from MyDjangoProjectServer.supabase_client import upload_comprobante_to_supabase
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_payment(request):
     """
-    📥 Crea un pago. Calcula automáticamente el total incluyendo cargo de envío.
+    Crea un pago. Calcula automáticamente el total incluyendo cargo de envío.
     """
     try:
         order_id = request.data.get('order_id')
@@ -28,7 +28,7 @@ def create_payment(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 🔎 Buscar la orden
+        # Buscar la orden
         try:
             order = Order.objects.get(id=order_id)
         except Order.DoesNotExist:
@@ -39,14 +39,14 @@ def create_payment(request):
 
         client_id = order.client.id
 
-        # 🔸 Validar método de pago
+        # Validar método de pago
         if payment_method not in ['efectivo', 'transferencia']:
             return Response(
                 {"message": "Método de pago inválido."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 🔸 Si es transferencia, validar comprobante
+        # Si es transferencia, validar comprobante
         public_url = None
         if payment_method == 'transferencia':
             if not comprobante:
@@ -56,19 +56,10 @@ def create_payment(request):
                 )
             public_url = upload_comprobante_to_supabase(comprobante, client_id)
 
-        # ✅ CALCULAR MONTO - Con manejo de errores
         try:
-            # Calcular subtotal de los productos
             subtotal = float(order.get_total() or 0)
-            
-            # Agregar cargo de envío solo si es domicilio
             delivery_fee = 15.0 if order.order_type == 'domicilio' else 0.0
-            
-            # Total final
             total_amount = subtotal + delivery_fee
-            
-            print(f"💵 Subtotal: {subtotal}, Envío: {delivery_fee}, Total: {total_amount}")
-            
         except Exception as calc_error:
             print(f"❌ Error en cálculo: {calc_error}")
             return Response(
@@ -76,7 +67,6 @@ def create_payment(request):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        # 🧾 Crear el pago
         payment = Payment.objects.create(
             order=order,
             payment_method=payment_method,
@@ -107,10 +97,10 @@ def create_payment(request):
 @permission_classes([IsAuthenticated])
 def get_payment_by_order(request, order_id):
     """
-    📋 Obtiene el pago asociado a una orden específica.
+    Obtiene el pago asociado a una orden específica.
     """
     try:
-        # 🔎 Buscar la orden
+        # Buscar la orden
         try:
             order = Order.objects.get(id=order_id)
         except Order.DoesNotExist:
@@ -119,14 +109,14 @@ def get_payment_by_order(request, order_id):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # 🔍 Verificar que el usuario autenticado sea el dueño de la orden
+        # Verificar que el usuario autenticado sea el dueño de la orden
         if order.client.id != request.user.id:
             return Response(
                 {"message": "No tienes permiso para ver el pago de esta orden."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # 🔎 Buscar el pago asociado a la orden
+        # Buscar el pago asociado a la orden
         try:
             payment = Payment.objects.get(order=order)
             serializer = PaymentSerializer(payment)

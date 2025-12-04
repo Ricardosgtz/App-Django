@@ -14,7 +14,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # -------------------------
-# 🔐 Seguridad
+# Seguridad
 # -------------------------
 SECRET_KEY = os.environ.get(
     'SECRET_KEY', 
@@ -24,12 +24,12 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # -------------------------
-# 🌍 Hosts permitidos
+# Hosts permitidos
 # -------------------------
 ALLOWED_HOSTS = ['*']  # o tu dominio Render
 
 # -------------------------
-# ⚙️ Aplicaciones
+# Aplicaciones
 # -------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
 
-    # Tus apps
+    # apps
     'channels',
     'clients',
     'authentication',
@@ -70,7 +70,7 @@ CHANNEL_LAYERS = {
 }
 
 # -------------------------
-# 🔄 Middleware
+# Middleware
 # -------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -103,7 +103,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'MyDjangoProjectServer.wsgi.application'
 
 # -------------------------
-# 🗄️ Base de datos
+# Base de datos
 # -------------------------
 DATABASES = {
     'default': dj_database_url.config(
@@ -114,7 +114,7 @@ DATABASES = {
 }
 
 # -------------------------
-# 🔐 JWT Authentication
+# JWT Authentication
 # -------------------------
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -140,31 +140,31 @@ SIMPLE_JWT = {
 }
 
 # -------------------------
-# 🌍 Internacionalización
+# Internacionalización
 # -------------------------
 LANGUAGE_CODE = 'es-mx'
 TIME_ZONE = 'America/Mexico_City'
 USE_I18N = True
-USE_TZ = True
+USE_TZ = False
 
 # -------------------------
-# 🖼️ Archivos estáticos y media
+# Archivos estáticos y media
 # -------------------------
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# 📸 Archivos subidos por los usuarios
+# Archivos subidos por los usuarios
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # -------------------------
-# 🔧 Auto field
+# Auto field
 # -------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # -------------------------
-# 🌐 Configuración para Render
+# Configuración para Render
 # -------------------------
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 
@@ -172,7 +172,7 @@ if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_EXTERNAL_HOSTNAME}']
 
 # -------------------------
-# 🔒 Seguridad en producción
+# Seguridad en producción
 # -------------------------
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
